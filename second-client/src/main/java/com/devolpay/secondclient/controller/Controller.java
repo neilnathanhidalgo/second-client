@@ -2,6 +2,7 @@ package com.devolpay.secondclient.controller;
 
 import com.devolpay.secondclient.feign.FClient;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,12 +27,14 @@ public class Controller {
 
     //curl http://localhost:8081/feign
     @GetMapping("/feign")
+    @CircuitBreaker(name = "first-client", fallbackMethod = "fallbackFeign")
     public String feignLlamada() {
-        if (fClient.getLlamada().equals("Ha ocurrido un problema al intentar realizar la llamada.")){
-            return fClient.getLlamada();
-        }else {
             return "\n A: " + feignQuestion +  "\n B: " + fClient.getLlamada();
-        }
     }
+
+    public String fallbackFeign(Throwable throwable) {
+        return "Ha ocurrido un problema al intentar realizar la llamada.";
+    }
+
 
 }
